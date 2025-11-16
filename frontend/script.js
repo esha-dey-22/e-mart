@@ -1,8 +1,8 @@
-/* Basic single-page app logic with cart persistence in localStorage.
-   Drop this as script.js and open index.html in the browser. */
+/* Single-file SPA with small UX/accessibility improvements and hash routing.
+   Drop in place of your script.js */
 
 (() => {
-  // Sample products
+  // Sample products (unchanged)
   const PRODUCTS = [
     { id: 1, name: "Aurora Sneakers", price: 59.99, rating: 4.5, img: "https://picsum.photos/seed/sneaker/800/600", desc: "Comfortable everyday sneakers." },
     { id: 2, name: "Lumen Headphones", price: 89.00, rating: 4.2, img: "https://picsum.photos/seed/headphone/800/600", desc: "Crisp audio, long battery life." },
@@ -29,32 +29,89 @@
   const yearEl = document.getElementById('year');
   const sidebar = document.getElementById('sidebar');
   const menuToggle = document.getElementById('menuToggle');
+  const brand = document.getElementById('brand');
 
-  // Routing
-  function setRoute(route) {
-    Object.keys(pages).forEach(k => pages[k].classList.remove('active'));
-    pages[route].classList.add('active');
-    // Close sidebar on small screens
-    if (sidebar.classList.contains('open')) sidebar.classList.remove('open');
+  // Storage key
+  const CART_KEY = 'emart_cart_v1';
+
+  // --- Routing (uses hash so pages are linkable) ---
+  function setRoute(route, pushHash = true) {
+    if (!pages[route]) route = 'home';
+    Object.keys(pages).forEach(k => {
+      if (k === route) {
+        pages[k].classList.remove('hidden');
+        pages[k].removeAttribute('hidden');
+        pages[k].classList.add('active');
+      } else {
+        pages[k].classList.add('hidden');
+        pages[k].setAttribute('hidden', '');
+        pages[k].classList.remove('active');
+      }
+    });
+
+    // aria-pressed for top nav
+    document.querySelectorAll('.navlink').forEach(btn => {
+      btn.setAttribute('aria-pressed', String(btn.dataset.route === route));
+    });
+
+    if (route === 'cart') renderCart();
+    if (route === 'home') renderProducts();
+
+    if (sidebar.classList.contains('open')) toggleSidebar(false);
+
+    if (pushHash) {
+      try { history.replaceState(null, '', `#${route}`); } catch (e) { location.hash = route; }
+    }
+
+    // move focus to main content for screen readers
+    document.getElementById('mainContent').focus?.();
+  }
+
+  // Respect initial hash
+  function initRouteFromHash() {
+    const h = (location.hash || '').replace('#', '');
+    setRoute(h || 'home', false);
   }
 
   // Link wiring
   document.querySelectorAll('.navlink, .side-link').forEach(btn => {
-    btn.addEventListener('click', e => {
+    btn.addEventListener('click', () => {
       const route = btn.getAttribute('data-route');
-      if (route) {
-        setRoute(route);
-        if (route === 'cart') renderCart();
-        if (route === 'home') renderProducts();
-      }
+      if (route) setRoute(route);
     });
   });
 
+  // brand -> home (also keyboard)
+  brand.addEventListener('click', () => setRoute('home'));
+  brand.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') setRoute('home'); });
+
   // Sidebar toggle for mobile
-  menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+  function toggleSidebar(force) {
+    const want = typeof force === 'boolean' ? force : !sidebar.classList.contains('open');
+    sidebar.classList.toggle('open', want);
+    menuToggle.setAttribute('aria-expanded', String(want));
+    if (want) {
+      // focus first focusable inside sidebar
+      const first = sidebar.querySelector('button, [tabindex]'); if (first) first.focus();
+    } else {
+      menuToggle.focus();
+    }
+  }
+  menuToggle.addEventListener('click', () => toggleSidebar());
+
+  // close sidebar on outside click (mobile)
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth < 640 && sidebar.classList.contains('open')) {
+      if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) toggleSidebar(false);
+    }
+  }, { capture: true });
+
+  // close on ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) toggleSidebar(false);
+  });
 
   // Storage helpers
-  const CART_KEY = 'emart_cart_v1';
   function readCart() {
     try {
       const raw = localStorage.getItem(CART_KEY);
@@ -94,6 +151,11 @@
   function renderProducts() {
     const list = getFilteredProducts();
     productGrid.innerHTML = '';
+    if (!list.length) {
+      productGrid.innerHTML = `<div style="color:var(--muted)">No products match your search.</div>`;
+      return;
+    }
+
     list.forEach(p => {
       const el = document.createElement('article');
       el.className = 'card';
@@ -105,7 +167,7 @@
         </div>
         <p class="desc">${escapeHtml(p.desc)}</p>
         <div class="actions">
-          <button class="add" data-id="${p.id}">Add to cart</button>
+          <button class="add" data-id="${p.id}" aria-label="Add ${escapeHtml(p.name)} to cart">Add to cart</button>
           <div style="font-size:13px;color:#6b7280">⭐ ${p.rating}</div>
         </div>
       `;
@@ -148,12 +210,12 @@
           <div style="color:#6b7280;font-size:13px;margin-top:6px">$${it.price.toFixed(2)}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-          <div class="qty-controls">
-            <button class="decrease" data-id="${it.id}">-</button>
+          <div class="qty-controls" role="group" aria-label="Quantity controls">
+            <button class="decrease" data-id="${it.id}" aria-label="Decrease quantity">-</button>
             <div style="padding:6px 10px;border-radius:8px;border:1px solid #e6eef8">${it.qty}</div>
-            <button class="increase" data-id="${it.id}">+</button>
+            <button class="increase" data-id="${it.id}" aria-label="Increase quantity">+</button>
           </div>
-          <button class="remove" data-id="${it.id}" style="background:transparent;border:0;color:#ef4444;cursor:pointer">Remove</button>
+          <button class="remove" data-id="${it.id}" style="background:transparent;border:0;color:#ef4444;cursor:pointer" aria-label="Remove item">Remove</button>
         </div>
       `;
       listWrap.appendChild(item);
@@ -232,21 +294,21 @@
   }
 
   // Utilities
-  function showToast(msg) {
+  function showToast(msg, ms = 1500) {
     const t = document.createElement('div');
+    t.className = 'toast';
     t.textContent = msg;
-    t.style.position = 'fixed';
-    t.style.right = '18px';
-    t.style.bottom = '18px';
-    t.style.padding = '10px 14px';
-    t.style.background = '#0f172a';
-    t.style.color = 'white';
-    t.style.borderRadius = '10px';
-    t.style.boxShadow = '0 6px 18px rgba(15,23,42,0.12)';
-    t.style.zIndex = 9999;
     document.body.appendChild(t);
-    setTimeout(()=>{ t.style.opacity = '0'; t.addEventListener('transitionend', ()=>t.remove()); },1500);
-    t.style.transition = 'opacity .4s ease';
+
+    // ensure animation applies
+    requestAnimationFrame(() => {
+      t.classList.remove('hide');
+    });
+
+    setTimeout(()=> {
+      t.classList.add('hide');
+      t.addEventListener('transitionend', ()=> t.remove(), { once: true });
+    }, ms);
   }
 
   function escapeHtml(s) {
@@ -262,20 +324,31 @@
   });
   sortSelect.addEventListener('change', () => renderProducts());
 
+  // Update on hash change (back/forward)
+  window.addEventListener('hashchange', () => {
+    const h = (location.hash || '').replace('#', '') || 'home';
+    setRoute(h, false);
+  });
+
+  // make pages adjust when window resized (cart layout)
+  window.addEventListener('resize', () => {
+    if (pages.cart.classList.contains('active')) renderCart();
+  });
+
   // Init
   function init() {
     yearEl.textContent = new Date().getFullYear();
-    renderProducts();
     updateCartBadge();
-    setRoute('home');
+    initRouteFromHash();
 
-    // brand click -> home
-    document.getElementById('brand').addEventListener('click', ()=>setRoute('home'));
+    // if user has no hash, default to home
+    if (!location.hash) setRoute('home', false);
 
-    // make sure pages adjust when window resized (cart layout)
-    window.addEventListener('resize', () => {
-      if (pages.cart.classList.contains('active')) renderCart();
-    });
+    // set initial focusability for main content
+    document.getElementById('mainContent').setAttribute('tabindex', '-1');
+
+    // ensure menuToggle has correct aria state
+    menuToggle.setAttribute('aria-expanded', 'false');
   }
 
   init();

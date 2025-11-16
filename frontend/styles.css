@@ -51,6 +51,7 @@ a{color:inherit}
 /* Nav links for large screens */
 .top-links{display:flex;gap:8px;align-items:center}
 .top-links .navlink{background:transparent;border:0;padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:600;color:var(--muted)}
+.top-links .navlink[aria-pressed="true"]{background:var(--accent);color:var(--primary)}
 .top-links .navlink:hover{background:var(--accent);color:var(--primary)}
 .badge{background:var(--primary);color:white;padding:2px 8px;border-radius:999px;font-size:12px;margin-left:6px}
 
@@ -59,14 +60,15 @@ a{color:inherit}
 .sidebar{width:240px;background:var(--surface);border-radius:12px;padding:16px;border:1px solid #e6eef8;box-shadow:var(--shadow);height:fit-content}
 .sidebar-title{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px}
 .side-link{display:block;width:100%;text-align:left;border:0;background:transparent;padding:10px;border-radius:8px;cursor:pointer;font-weight:600;color:#0f172a}
+.side-link:focus{outline:2px solid rgba(79,70,229,0.18)}
 .side-link:hover{background:#f8fbff;color:var(--primary)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{background:#f3f4f6;padding:6px 10px;border-radius:999px;font-size:13px;color:var(--muted)}
 
 /* Main */
 .main{flex:1}
-.page{display:none}
-.page.active{display:block}
+.page{display:block}
+.page[hidden]{display:none}
 .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .controls{display:flex;gap:10px;align-items:center}
 .controls select{padding:8px;border-radius:8px;border:1px solid #e6eef8;background:white}
@@ -120,3 +122,19 @@ a{color:inherit}
   .grid{grid-template-columns:repeat(1,1fr)}
   .card img{height:180px}
 }
+
+/* Toast tweaks */
+.toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  padding: 10px 14px;
+  background: #0f172a;
+  color: white;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.12);
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity .4s ease, transform .18s ease;
+}
+.toast.hide { opacity: 0; transform: translateY(8px); }

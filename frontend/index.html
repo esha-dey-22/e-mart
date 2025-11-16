@@ -9,28 +9,28 @@
 <body>
   <div id="app" class="app-root">
     <!-- Top Navigation -->
-    <header class="topnav">
+    <header class="topnav" role="banner">
       <div class="brand" id="brand" tabindex="0">E-Mart <span class="tag">Dashboard</span></div>
 
       <div class="top-controls">
-        <div class="search-wrap">
+        <div class="search-wrap" role="search" aria-label="Search products">
           <input id="searchInput" type="search" placeholder="Search products..." aria-label="Search products" />
-          <button id="searchBtn" class="icon-btn">🔍</button>
+          <button id="searchBtn" class="icon-btn" type="button" aria-label="Search">🔍</button>
         </div>
 
         <nav class="top-links" role="navigation" aria-label="Main nav">
-          <button class="navlink" data-route="home">Home</button>
-          <button class="navlink" data-route="about">About</button>
-          <button class="navlink" data-route="cart">Cart <span id="cartBadge" class="badge">0</span></button>
+          <button class="navlink" data-route="home" aria-pressed="true">Home</button>
+          <button class="navlink" data-route="about" aria-pressed="false">About</button>
+          <button class="navlink" data-route="cart" aria-pressed="false">Cart <span id="cartBadge" class="badge">0</span></button>
         </nav>
 
-        <button id="menuToggle" class="icon-btn md-hidden" aria-label="Toggle sidebar">☰</button>
+        <button id="menuToggle" class="icon-btn md-hidden" aria-label="Toggle sidebar" aria-expanded="false">☰</button>
       </div>
     </header>
 
     <div class="layout">
       <!-- Sidebar -->
-      <aside id="sidebar" class="sidebar">
+      <aside id="sidebar" class="sidebar" role="complementary" aria-label="Sidebar navigation">
         <div class="sidebar-section">
           <div class="sidebar-title">Browse</div>
           <button class="side-link" data-route="home">Home</button>
@@ -40,25 +40,25 @@
 
         <div class="sidebar-section">
           <div class="sidebar-title">Categories</div>
-          <div class="chips">
-            <span class="chip">Shoes</span>
-            <span class="chip">Electronics</span>
-            <span class="chip">Home</span>
-            <span class="chip">Accessories</span>
+          <div class="chips" role="list">
+            <span class="chip" role="listitem">Shoes</span>
+            <span class="chip" role="listitem">Electronics</span>
+            <span class="chip" role="listitem">Home</span>
+            <span class="chip" role="listitem">Accessories</span>
           </div>
         </div>
       </aside>
 
       <!-- Main content -->
-      <main class="main">
+      <main class="main" role="main" id="mainContent">
         <!-- Home -->
-        <section id="page-home" class="page active">
+        <section id="page-home" class="page" data-route="home">
           <div class="page-header">
             <h1>Featured Products</h1>
 
             <div class="controls">
               <label for="sortSelect">Sort</label>
-              <select id="sortSelect">
+              <select id="sortSelect" aria-label="Sort products">
                 <option value="featured">Featured</option>
                 <option value="low">Price: Low → High</option>
                 <option value="high">Price: High → Low</option>
@@ -66,11 +66,11 @@
             </div>
           </div>
 
-          <div id="productGrid" class="grid"></div>
+          <div id="productGrid" class="grid" aria-live="polite"></div>
         </section>
 
         <!-- About -->
-        <section id="page-about" class="page">
+        <section id="page-about" class="page" data-route="about" hidden>
           <div class="page-content">
             <h1>About E-Mart</h1>
             <p>E-Mart is a demo storefront to showcase responsive UI patterns and a simple cart experience. Use this as a starting point for your e-commerce frontend.</p>
@@ -88,16 +88,16 @@
         </section>
 
         <!-- Cart -->
-        <section id="page-cart" class="page">
+        <section id="page-cart" class="page" data-route="cart" hidden>
           <div class="page-content">
             <h1>My Cart</h1>
-            <div id="cartContainer"></div>
+            <div id="cartContainer" aria-live="polite"></div>
           </div>
         </section>
       </main>
     </div>
 
-    <footer class="footer">© <span id="year"></span> E-Mart — Demo.</footer>
+    <footer class="footer" role="contentinfo">© <span id="year"></span> E-Mart — Demo.</footer>
   </div>
 
   <script src="script.js"></script>
