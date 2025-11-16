@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE = "emart-frontend"
+        IMAGE = "esha0629/emart-frontend"
         TAG = "${env.BUILD_NUMBER}"
     }
 
@@ -20,10 +20,21 @@ pipeline {
             }
         }
 
+        stage('Docker Hub Login & Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                    sh "docker push ${IMAGE}:${TAG}"
+                    sh "docker push ${IMAGE}:latest"
+                }
+            }
+        }
+
         stage('Deploy Container') {
             steps {
                 sh "docker stop emart || true"
                 sh "docker rm emart || true"
+                sh "docker pull ${IMAGE}:latest"
                 sh "docker run -d --name emart --restart unless-stopped -p 80:80 ${IMAGE}:latest"
             }
         }
@@ -32,9 +43,6 @@ pipeline {
     post {
         success {
             echo "Deployment successful: ${IMAGE}:${TAG}"
-        }
-        failure {
-            echo "Deployment failed."
         }
     }
 }
