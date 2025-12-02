@@ -1,0 +1,2 @@
+[emart_servers]
+emart1 ansible_host=100.28.221.82 ansible_user=ubuntu ansible_ssh_private_key_file=~/Downloads/emart-key.pem

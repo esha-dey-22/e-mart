@@ -1,0 +1,17 @@
+---
+- name: Deploy E-Mart frontend container
+  hosts: emart_servers
+  become: true
+
+  tasks:
+    - name: Pull latest image from Docker Hub
+      ansible.builtin.shell: |
+        docker pull esha0629/e-mart-frontend:latest
+
+    - name: Stop and remove existing container if running
+      ansible.builtin.shell: |
+        docker rm -f emart-app || true
+
+    - name: Run container with latest image
+      ansible.builtin.shell: |
+        docker run -d --name emart-app -p 8081:80 esha0629/e-mart-frontend:latest
